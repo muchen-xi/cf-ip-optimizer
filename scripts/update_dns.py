@@ -2,6 +2,8 @@
 """
 读取 CloudflareST 测速结果，更新阿里云 DNS A 记录。
 用于 cf-test.chenxiuniverse.top 优选IP实验。
+
+新增: 先查询当前 DNS 记录，无变化则跳过更新。
 """
 import csv
 import json
@@ -27,6 +29,7 @@ RECORD_IDS = [
 ]
 # ============================================================
 
+
 def get_top_ips(csv_path="result.csv", top_n=TOP_N):
     """从 CloudflareST 输出的 CSV 中提取 Top N IP"""
     ips = []
@@ -48,6 +51,26 @@ def get_top_ips(csv_path="result.csv", top_n=TOP_N):
         print(f"❌ {csv_path} 未找到！")
         sys.exit(1)
     return ips[:top_n]
+
+
+def get_current_ips(client, record_ids, rr="cf-test"):
+    """查询阿里云 DNS 上当前 A 记录的 IP 值，返回 {record_id: ip}"""
+    mod = importlib.import_module(
+        'aliyunsdkalidns.request.v20150109.DescribeDomainRecordInfoRequest'
+    )
+    current = {}
+    for rid in record_ids:
+        try:
+            req = mod.DescribeDomainRecordInfoRequest()
+            req.set_RecordId(rid)
+            resp = client.do_action_with_exception(req)
+            data = json.loads(resp)
+            ip = data.get("Value", "")
+            if ip:
+                current[rid] = ip
+        except Exception as e:
+            print(f"  ⚠️ 查询 RecordId={rid} 失败: {e}")
+    return current
 
 
 def update_record(client, record_id, rr, ip, ttl=600):
@@ -93,17 +116,42 @@ def main():
         "cn-hangzhou",
     )
 
-    # 更新 DNS
-    print("🔄 更新 DNS...")
-    success = 0
+    # 查询当前 DNS 记录
+    print("🔍 查询当前 DNS 记录...")
+    current_ips = get_current_ips(client, RECORD_IDS)
+    if current_ips:
+        for rid, ip in current_ips.items():
+            print(f"  cf-test.{DOMAIN} → {ip}")
+    else:
+        print("  ⚠️ 未能查询到当前记录，将直接更新")
+
+    # 构建新 IP 列表（对齐 RECORD_IDS 长度）
+    new_ips = []
     for i in range(len(RECORD_IDS)):
         if i < len(top_ips):
-            if update_record(client, RECORD_IDS[i], "cf-test", top_ips[i]["ip"]):
-                success += 1
+            new_ips.append(top_ips[i]["ip"])
         else:
-            # 多余记录设为第一个最优 IP（保持一致）
-            if update_record(client, RECORD_IDS[i], "cf-test", top_ips[0]["ip"]):
-                success += 1
+            new_ips.append(top_ips[0]["ip"])
+
+    # 变更检测：新旧是否完全一致
+    current_list = [current_ips.get(rid, "") for rid in RECORD_IDS]
+    if current_ips and new_ips == current_list:
+        print(f"\n⏭️  IP 未变化，跳过更新")
+        print(f"  {new_ips}")
+        print(f"⏰ {time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+        return 0
+
+    # 有变化才更新
+    changes = 0
+    for i, (rid, new_ip, old_ip) in enumerate(zip(RECORD_IDS, new_ips, current_list)):
+        if new_ip != old_ip:
+            changes += 1
+
+    print(f"\n🔄 IP 有变化 ({changes}/{len(RECORD_IDS)} 条)，更新 DNS...")
+    success = 0
+    for i in range(len(RECORD_IDS)):
+        if update_record(client, RECORD_IDS[i], "cf-test", new_ips[i]):
+            success += 1
 
     print(f"\n✅ 完成: {success}/{len(RECORD_IDS)} 条记录已更新")
     print(f"⏰ {time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
