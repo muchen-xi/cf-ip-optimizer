@@ -2,7 +2,7 @@ name: CF优选IP扫描更新
 
 on:
   schedule:
-    - cron: '13 */6 * * *'   # 每6小时，13分避开整点
+    - cron: '13 4 */5 * *'   # 每5天凌晨4:13执行，避开高峰
   workflow_dispatch:
 
 jobs:
