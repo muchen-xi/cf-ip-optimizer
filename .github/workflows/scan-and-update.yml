@@ -1,0 +1,45 @@
+name: CF优选IP扫描更新
+
+on:
+  schedule:
+    - cron: '13 */6 * * *'   # 每6小时，13分避开整点
+  workflow_dispatch:
+
+jobs:
+  scan-and-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 下载 CloudflareSpeedTest
+        run: |
+          wget -q -O cfst.tar.gz https://github.com/XIU2/CloudflareSpeedTest/releases/download/v2.2.5/CloudflareST_linux_amd64.tar.gz
+          tar -xzf cfst.tar.gz
+          chmod +x CloudflareST
+          echo "✅ CloudflareSpeedTest 就绪"
+
+      - name: 测速扫描
+        run: |
+          ./CloudflareST -n 500 -t 4 -dn 5 -tl 300 -sl 5 \
+            -url "https://speed.cloudflare.com/__down?bytes=10485760"
+          echo "=== TOP 5 ==="
+          head -6 result.csv
+
+      - name: 安装阿里云SDK
+        run: pip install aliyun-python-sdk-core aliyun-python-sdk-alidns
+
+      - name: 更新DNS
+        env:
+          ALI_KEY_ID: ${{ secrets.ALI_KEY_ID }}
+          ALI_KEY_SECRET: ${{ secrets.ALI_KEY_SECRET }}
+        run: python scripts/update_dns.py
+
+      - name: 保存结果
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-results
+          path: result.csv
+          retention-days: 7
