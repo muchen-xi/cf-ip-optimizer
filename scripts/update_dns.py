@@ -156,6 +156,10 @@ def main():
     print(f"\n✅ 完成: {success}/{len(RECORD_IDS)} 条记录已更新")
     print(f"⏰ {time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
 
+    if success < len(RECORD_IDS):
+        sys.exit(1)
+    return 0
+
 
 if __name__ == "__main__":
     main()
