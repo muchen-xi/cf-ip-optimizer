@@ -39,12 +39,16 @@ TTL = 600
 TARGETS = [
     {"rr": "www", "line": "default", "csv": "china"},      # 国内 → 境内优选
     {"rr": "www", "line": "oversea", "csv": "overseas"},    # 境外 → 境外优选
+    {"rr": "pimanager", "line": "default", "csv": "china"},
+    {"rr": "pimanager", "line": "oversea", "csv": "overseas"},
 ]
 
 # RecordId 环境变量映射
 RECORD_ID_ENV_MAP = {
     ("www", "default"): "RECORD_IDS_WWW_DEFAULT",
     ("www", "oversea"): "RECORD_IDS_WWW_OVERSEA",
+    ("pimanager", "default"): "RECORD_IDS_PIMANAGER_DEFAULT",
+    ("pimanager", "oversea"): "RECORD_IDS_PIMANAGER_OVERSEA",
 }
 
 
