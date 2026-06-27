@@ -41,6 +41,10 @@ TARGETS = [
     {"rr": "www", "line": "oversea", "csv": "overseas"},    # 境外 → 境外优选
     {"rr": "pimanager", "line": "default", "csv": "china"},
     {"rr": "pimanager", "line": "oversea", "csv": "overseas"},
+    {"rr": "health", "line": "default", "csv": "china"},     # 健康仪表盘
+    {"rr": "health", "line": "oversea", "csv": "overseas"},
+    {"rr": "history", "line": "default", "csv": "china"},    # 网页进化史
+    {"rr": "history", "line": "oversea", "csv": "overseas"},
 ]
 
 # RecordId 环境变量映射
@@ -49,6 +53,10 @@ RECORD_ID_ENV_MAP = {
     ("www", "oversea"): "RECORD_IDS_WWW_OVERSEA",
     ("pimanager", "default"): "RECORD_IDS_PIMANAGER_DEFAULT",
     ("pimanager", "oversea"): "RECORD_IDS_PIMANAGER_OVERSEA",
+    ("health", "default"): "RECORD_IDS_HEALTH_DEFAULT",
+    ("health", "oversea"): "RECORD_IDS_HEALTH_OVERSEA",
+    ("history", "default"): "RECORD_IDS_HISTORY_DEFAULT",
+    ("history", "oversea"): "RECORD_IDS_HISTORY_OVERSEA",
 }
 
 
