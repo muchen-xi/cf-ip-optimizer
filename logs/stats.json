@@ -6,9 +6,9 @@
     "restore_count": 2
   },
   "2026-06-27": {
-    "checks_total": 12,
+    "checks_total": 13,
     "checks_failed": 0,
     "backup_count": 1,
-    "restore_count": 11
+    "restore_count": 12
   }
 }
