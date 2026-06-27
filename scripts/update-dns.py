@@ -6,7 +6,7 @@
   - 境外线路 (oversea): 用境外测速的 Top 3 IP
   - 默认线路 (default): 用境内测速的 Top 3 IP → 国内用户走这条
 
-目标子域: www, pimanager
+目标子域: www
 (chenxiuniverse.top 根域保持 GH Pages 301 跳转，不动)
 
 环境变量:
@@ -39,16 +39,12 @@ TTL = 600
 TARGETS = [
     {"rr": "www", "line": "default", "csv": "china"},      # 国内 → 境内优选
     {"rr": "www", "line": "oversea", "csv": "overseas"},    # 境外 → 境外优选
-    {"rr": "pimanager", "line": "default", "csv": "china"},
-    {"rr": "pimanager", "line": "oversea", "csv": "overseas"},
 ]
 
 # RecordId 环境变量映射
 RECORD_ID_ENV_MAP = {
     ("www", "default"): "RECORD_IDS_WWW_DEFAULT",
     ("www", "oversea"): "RECORD_IDS_WWW_OVERSEA",
-    ("pimanager", "default"): "RECORD_IDS_PIMANAGER_DEFAULT",
-    ("pimanager", "oversea"): "RECORD_IDS_PIMANAGER_OVERSEA",
 }
 
 
