@@ -34,5 +34,11 @@
     "checks_failed": 0,
     "backup_count": 0,
     "restore_count": 9
+  },
+  "2026-07-02": {
+    "checks_total": 1,
+    "checks_failed": 0,
+    "backup_count": 0,
+    "restore_count": 1
   }
 }
