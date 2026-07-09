@@ -142,6 +142,7 @@ def get_traffic_stats(days: int = 7) -> dict:
         url = f"{REPORT_STATS_URL}?days={days}&sites=www,pimanager"
         req = urllib.request.Request(url)
         req.add_header("Authorization", f"Bearer {SHARED_SECRET}")
+        req.add_header("User-Agent", "cf-ip-optimizer/1.0 (monitoring)")
         with urllib.request.urlopen(req, timeout=15) as resp:
             if resp.status == 404:
                 print("⚠ 流量端点未部署 (/_report_stats)")
