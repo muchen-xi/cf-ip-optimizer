@@ -132,16 +132,21 @@ def read_stats(since_days: int = 7) -> dict:
 
 # ─── 流量统计 ───
 
-COUNTER_URL = "https://counter.m20081225.workers.dev"
+REPORT_STATS_URL = "https://www.chenxiuniverse.top/_report_stats"
+SHARED_SECRET = "207ddbc0c5376668adb2f5c225fae18ed0859c3cf86865ab"
 
 
 def get_traffic_stats(days: int = 7) -> dict:
-    """从 counter Worker 获取页面访问量"""
+    """从 Pages Function 端点获取页面访问量（Bearer 认证）"""
     try:
-        url = f"{COUNTER_URL}/stats?days={days}&sites=www,pimanager"
+        url = f"{REPORT_STATS_URL}?days={days}&sites=www,pimanager"
         req = urllib.request.Request(url)
+        req.add_header("Authorization", f"Bearer {SHARED_SECRET}")
         with urllib.request.urlopen(req, timeout=15) as resp:
-            return json.loads(resp.read().decode())
+            if resp.status == 404:
+                print("⚠ 流量端点未部署 (/_report_stats)")
+                return {}
+            return json.loads(resp.read())
     except Exception as e:
         print(f"⚠ 流量数据获取失败: {e}")
         return {}
