@@ -112,5 +112,11 @@
     "checks_failed": 0,
     "backup_count": 0,
     "restore_count": 15
+  },
+  "2026-07-15": {
+    "checks_total": 1,
+    "checks_failed": 0,
+    "backup_count": 0,
+    "restore_count": 1
   }
 }
