@@ -501,12 +501,17 @@ def read_candidates(csv_path: str) -> list[str]:
 # ═══════════════════════════════════════════════════════════════
 
 def main():
-    csv_path = sys.argv[1] if len(sys.argv) > 1 else "result.csv"
-    output = sys.argv[2] if len(sys.argv) > 2 else "china_result.csv"
-    if output.startswith("--"):
-        # Handle case: script.py --output china_result.csv (no result.csv)
-        output = sys.argv[1] if len(sys.argv) > 1 else "china_result.csv"
-        csv_path = "result.csv"
+    # 兼容三种用法：
+    #   script.py result.csv china_result.csv
+    #   script.py result.csv --output china_result.csv
+    #   script.py --output china_result.csv
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    csv_path = args[0] if args else "result.csv"
+    output = "china_result.csv"
+    if "--output" in sys.argv:
+        idx = sys.argv.index("--output")
+        if idx + 1 < len(sys.argv):
+            output = sys.argv[idx + 1]
 
     print(f"=== 境内测速 === @ {time.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"输入: {csv_path}  输出: {output}")

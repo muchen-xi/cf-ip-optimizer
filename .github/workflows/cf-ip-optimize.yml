@@ -109,18 +109,31 @@ jobs:
             echo "::error::境外+境内健康验证全部失败，阻断部署"
             exit 1
           fi
-          if [ $OVERSEAS_OK -eq 0 ]; then echo "✅ 境外IP健康验证通过"; else echo "⚠️ 境外IP健康验证失败，跳过（境内可用）"; fi
-          if [ $CHINA_OK -eq 0 ]; then echo "✅ 境内IP健康验证通过"; else echo "⚠️ 境内IP健康验证失败，跳过（境外可用）"; fi
+          if [ $OVERSEAS_OK -eq 0 ]; then
+            echo "✅ 境外IP健康验证通过"
+            echo "overseas_valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ 境外IP健康验证失败，本轮跳过境外线路"
+            echo "overseas_valid=false" >> $GITHUB_OUTPUT
+          fi
+          if [ $CHINA_OK -eq 0 ]; then
+            echo "✅ 境内IP健康验证通过"
+            echo "china_valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ 境内IP健康验证失败，本轮跳过境内线路"
+            echo "china_valid=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: 更新 DNS（分线路）
         run: |
-          OVERSEAS_CSV="result.csv"
-          CHINA_CSV="china_result.csv"
-          if [ -f valid_overseas.csv ] && [ -s valid_overseas.csv ]; then
+          # 只有验证通过且筛选文件非空才部署；验证失败绝不回落到未验证的 raw CSV
+          OVERSEAS_CSV=""
+          CHINA_CSV=""
+          if [ "${{ steps.health.outputs.overseas_valid }}" = "true" ] && [ -s valid_overseas.csv ]; then
             OVERSEAS_CSV="valid_overseas.csv"
             echo "使用健康验证后的境外 IP"
           fi
-          if [ -f valid_china.csv ] && [ -s valid_china.csv ]; then
+          if [ "${{ steps.health.outputs.china_valid }}" = "true" ] && [ -s valid_china.csv ]; then
             CHINA_CSV="valid_china.csv"
             echo "使用健康验证后的境内 IP"
           fi

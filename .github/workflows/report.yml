@@ -30,11 +30,11 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "report=${{ inputs.type }}" >> $GITHUB_OUTPUT
-          elif [ "$(date -u +%H)" = "07" ]; then
-            # 07:30 UTC = 周五 15:30 北京 → 周报
+          elif [ "${{ github.event.schedule }}" = "30 7 * * 5" ]; then
+            # 周五 15:30 北京 周报 cron → 周报（用 schedule 精确匹配，不受 GitHub 延迟执行影响）
             echo "report=weekly" >> $GITHUB_OUTPUT
           else
-            # 23:00 UTC = 每天 7:00 北京 → 日报
+            # 每天 7:00 北京 日报 cron → 日报
             echo "report=daily" >> $GITHUB_OUTPUT
           fi
 

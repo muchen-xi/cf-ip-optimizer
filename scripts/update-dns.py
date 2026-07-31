@@ -238,6 +238,14 @@ def main():
     ))
     client._endpoint = f"alidns.{region}.aliyuncs.com"
 
+    # 先确定哪些子域今天有 default 线路数据（避免仅更新 oversea 而无 default 兜底）
+    default_ok = set()
+    for target in TARGETS:
+        if target["line"] == "default":
+            ips = china_ips if target["csv"] == "china" else overseas_ips
+            if ips:
+                default_ok.add(target["rr"])
+
     # 逐个子域+线路更新
     changed = False
     for target in TARGETS:
@@ -248,6 +256,9 @@ def main():
         ips = china_ips if csv_source == "china" else overseas_ips
         if not ips:
             print(f"⚠ {rr}.{DOMAIN} ({line}): 无对应 IP，跳过")
+            continue
+        if line == "oversea" and rr not in default_ok:
+            print(f"⚠ {rr}.{DOMAIN} ({line}): 今天无 {rr} 的 default 线路数据，跳过 oversea 更新（避免仅剩 oversea 无兜底记录）")
             continue
 
         print(f"\n{rr}.{DOMAIN} ({line}):")
@@ -266,7 +277,7 @@ def main():
         "china_ips": china_ips,
         "changed": changed,
         "dry_run": dry_run,
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
     summary_json = json.dumps(summary, ensure_ascii=False)
     # GitHub Actions: 写入 $GITHUB_STEP_SUMMARY
