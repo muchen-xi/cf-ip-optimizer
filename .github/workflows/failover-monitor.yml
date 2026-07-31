@@ -152,7 +152,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add logs/ .failover_count.json .failover_state.json 2>/dev/null || true
+          # .failover_state.json 仅在 backup 后存在；git add 遇不存在路径会整体失败(exit 128)且不暂存任何文件，
+          # 所以必须分开 add，否则 .failover_count.json 状态永远无法持久化
+          git add logs/ .failover_count.json 2>/dev/null || true
+          [ -f .failover_state.json ] && git add .failover_state.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "无变更"
           else
